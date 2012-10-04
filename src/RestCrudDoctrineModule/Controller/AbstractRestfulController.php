@@ -6,6 +6,8 @@ use Zend\Mvc\Controller\AbstractRestfulController as ZendAbstractRestfulControll
 
 abstract class AbstractRestfulController extends ZendAbstractRestfulController
 {
+	protected $service;
+
 	public function getList()
 	{
 		$request = $this->getRequest();
@@ -39,21 +41,76 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 
 	public function get($id)
 	{
-		return array('data' => 'id');
+        try {
+            $model = $this->service->getById($id);
+        } catch (\DysBase\Service\Exception\NotFound $e) {
+            throw new \Zend\Mvc\Exception\ExceptionInterface(
+                $e->getMessage(),
+                404,
+                $e
+            );
+        } catch (\DysBase\Service\Exception\ExceptionInterface $e) {
+            throw new \Zend\Mvc\Exception\ExceptionInterface(
+                $e->getMessage(),
+                500,
+                $e
+            );
+        }
+        
+        return $model;
 	}
 
 	public function create($data)
 	{
-		return array('data' => 'create');
+		$service->save(null, $data);
+		// 
+        /*$this->getResponse()->setHeader(
+            'Location',
+            '/' . lcfirst($this->_packageName) . $this->entityName . '/'
+            . $dto->id,
+            true
+        );*/
+        //$this->getResponse()->setHttpResponseCode(
+		//return array('data' => 'create');
 	}
 
 	public function update($id, $data)
 	{
-		return array('data' => 'update');
+		$service->save($id, $data);
+		//$this->save();
+		//return array('data' => 'update');
 	}
+
 
 	public function delete($id)
 	{
-		return array('data' => 'delete');
+		$service->delete($id);
+        try {
+            $model = $this->service->getById($id);
+        } catch (\RestCrudDoctrineModule\Service\Exception\NotFound $e) {
+            throw new \Zend\Controller\Action\Exception(
+                $e->getMessage(),
+                404,
+                $e
+            );
+        }
+
+        try {
+            $service->delete($model);
+        } catch (RestCrudDoctrineModule\Service\Exception\UnexpectedValueException $e) {
+            throw new \Zend\Controller\Action\Exception(
+                $e->getMessage(),
+                405,
+                $e
+            );
+        }
+        
+        $this->getResponse()->setHttpResponseCode(204);
+		//return array('data' => 'delete');
+	}
+
+	public function setService($service)
+	{
+		$this->service = $service;
 	}
 }
