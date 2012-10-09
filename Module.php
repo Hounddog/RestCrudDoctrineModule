@@ -2,7 +2,7 @@
 
 namespace RestCrudDoctrineModule;
 
-use ZfcBase/Module/AbstractModule as ZfcBaseAbstractModule;
+use ZfcBase\Module\AbstractModule as ZfcBaseAbstractModule;
 
 class Module extends ZfcBaseAbstractModule
 {
