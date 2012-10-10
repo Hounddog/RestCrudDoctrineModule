@@ -46,10 +46,7 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 
 		$query = $request->getQuery();*/
 
-        $data = $this->mapper->findAll();
-        //echo "<pre>";
-        //print_r($data);
-        //exit;
+        $data = $this->mapper->findAll(new \Zend\Stdlib\Hydrator\ClassMethods);
         // need to convert $data to array for json output
 		return new JsonModel($data);
 	}

@@ -3,6 +3,7 @@
 namespace RestCrudDoctrineModule\Mapper;
 
 use Doctrine\ORM\EntityManager;
+use Zend\Stdlib\Hydrator\HydratorInterface;
 
 abstract class AbstractDBMapper
 {
@@ -19,10 +20,18 @@ abstract class AbstractDBMapper
         $this->entityClassName  = $entityClassName;
     }
 
-    public function findAll() 
+    public function findAll(HydratorInterface $hydrator = null) 
     {
         $er = $this->em->getRepository($this->entityClassName);
-        return $er->findAll();
+        $results = $er->findAll();
+        if(null !== $hydrator) {
+            $data = array();
+            foreach($results as $entity) {
+                $data[] = $hydrator->extract($entity);
+            }
+            $results = $data;
+        }
+        return $results;
     }
 
     public function findById($id)
