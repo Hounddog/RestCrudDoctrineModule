@@ -19,7 +19,7 @@ abstract class AbstractModule extends ZfcBaseAbstractModule
         $em  = $app->getEventManager()->getSharedManager();
         $sm  = $app->getServiceManager();
 
-        $em->attach(__NAMESPACE__, MvcEvent::EVENT_DISPATCH, function($e) use ($sm) {
+        $em->attach($this->getNamespace(), MvcEvent::EVENT_DISPATCH, function($e) use ($sm) {
             $strategy = $sm->get('ViewJsonStrategy');
             $view     = $sm->get('ViewManager')->getView();
             $strategy->attach($view->getEventManager());

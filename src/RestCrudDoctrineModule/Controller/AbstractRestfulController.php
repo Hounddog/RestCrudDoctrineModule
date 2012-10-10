@@ -3,14 +3,17 @@
 namespace RestCrudDoctrineModule\Controller;
 
 use Zend\Mvc\Controller\AbstractRestfulController as ZendAbstractRestfulController;
+use Zend\View\Model\JsonModel;
 
 abstract class AbstractRestfulController extends ZendAbstractRestfulController
 {
 	protected $service;
 
+    protected $mapper;
+
 	public function getList()
 	{
-		$request = $this->getRequest();
+		/*$request = $this->getRequest();
 
 		$start = null;
 		$count = null;
@@ -34,35 +37,33 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 			$orderBy['sort'] = substr($order, 1);
 		}
 
-		$query = $request->getQuery();
+		$query = $request->getQuery();*/
 
-		return array('data' => 'list');
+        $data = $this->mapper->findAll();
+		return new JsonModel(array('data' => $data));
 	}
 
 	public function get($id)
 	{
         try {
-            $model = $this->service->getById($id);
+            $model = $this->mapper->findById($id);
         } catch (\DysBase\Service\Exception\NotFound $e) {
             throw new \Zend\Mvc\Exception\ExceptionInterface(
                 $e->getMessage(),
                 404,
                 $e
             );
-        } catch (\DysBase\Service\Exception\ExceptionInterface $e) {
-            throw new \Zend\Mvc\Exception\ExceptionInterface(
-                $e->getMessage(),
-                500,
-                $e
-            );
-        }
+        } 
         
         return $model;
 	}
 
 	public function create($data)
 	{
-		$service->save(null, $data);
+		$entity = $service->create(null, $data);
+        $entity = $this->mapper->insert($entity);
+
+        return new JsonModel('data' => $entity);
 		// 
         /*$this->getResponse()->setHeader(
             'Location',
@@ -76,7 +77,10 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 
 	public function update($id, $data)
 	{
-		$service->save($id, $data);
+		$entity = $service->save($id, $data);
+        $entity = $this->mapper->update($entity);
+
+        return new JsonModel('data' => $entity);
 		//$this->save();
 		//return array('data' => 'update');
 	}
@@ -86,7 +90,7 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 	{
 		$service->delete($id);
         try {
-            $model = $this->service->getById($id);
+            $entity = $this->mapper->findById($id);
         } catch (\RestCrudDoctrineModule\Service\Exception\NotFound $e) {
             throw new \Zend\Controller\Action\Exception(
                 $e->getMessage(),
@@ -96,7 +100,7 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
         }
 
         try {
-            $service->delete($model);
+            $this->mapper->remove($entity);
         } catch (RestCrudDoctrineModule\Service\Exception\UnexpectedValueException $e) {
             throw new \Zend\Controller\Action\Exception(
                 $e->getMessage(),
@@ -113,4 +117,9 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 	{
 		$this->service = $service;
 	}
+
+    public function setMapper($mapper)
+    {
+        $this->mapper = $mapper;
+    }
 }

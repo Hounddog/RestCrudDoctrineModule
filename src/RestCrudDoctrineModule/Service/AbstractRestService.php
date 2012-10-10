@@ -13,7 +13,7 @@ abstract class AbstractRestService implements ServiceManagerAwareInterface
 
 	protected $count;
 
-	public function getAll($start = 0, $count = 100, $orderBy = array()) {
+	/*public function getAll($start = 0, $count = 100, $orderBy = array()) {
 		$qb = $this->getQueryBuilder($start, $count);
 		if(count($orderby)) {
 			$qb->addOrderBy('entity._' . $orderBy['sort'], $orderBy['order']);
@@ -23,9 +23,9 @@ abstract class AbstractRestService implements ServiceManagerAwareInterface
 		$results = $query->getResults();
 		$this->setCount(count($results));
 		return $results;
-	}
+	}*/
 
-	public function getById($id)
+	/*public function getById($id)
 	{
 		$em = $this->sm->get('doctrine.entitymanager.orm_default');
 
@@ -37,7 +37,8 @@ abstract class AbstractRestService implements ServiceManagerAwareInterface
         }
 
         return $entity;
-	}
+	}*/
+
 
 	public function save($id, $data) 
 	{
