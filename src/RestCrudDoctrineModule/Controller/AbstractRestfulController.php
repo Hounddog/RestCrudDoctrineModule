@@ -4,6 +4,8 @@ namespace RestCrudDoctrineModule\Controller;
 
 use Zend\Mvc\Controller\AbstractRestfulController as ZendAbstractRestfulController;
 use Zend\View\Model\JsonModel;
+use RestCrudDoctrineModule\Mapper\AbstractDBMapper as DBMapper;
+use RestCrudDoctrineModule\Service\AbstractRestService as Service;
 
 abstract class AbstractRestfulController extends ZendAbstractRestfulController
 {
@@ -11,9 +13,14 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 
     protected $mapper;
 
+    public function __construct(DBMapper $mapper, Service $service) {
+        $this->mapper = $mapper;
+        $this->service = $service;
+    }
+
 	public function getList()
 	{
-		/*$request = $this->getRequest();
+        /*$request = $this->getRequest();
 
 		$start = null;
 		$count = null;
@@ -40,13 +47,17 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 		$query = $request->getQuery();*/
 
         $data = $this->mapper->findAll();
-		return new JsonModel(array('data' => $data));
+        //echo "<pre>";
+        //print_r($data);
+        //exit;
+        // need to convert $data to array for json output
+		return new JsonModel($data);
 	}
 
 	public function get($id)
 	{
         try {
-            $model = $this->mapper->findById($id);
+            $entity = $this->mapper->findById($id);
         } catch (\DysBase\Service\Exception\NotFound $e) {
             throw new \Zend\Mvc\Exception\ExceptionInterface(
                 $e->getMessage(),
@@ -54,16 +65,23 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
                 $e
             );
         } 
-        
-        return $model;
+        echo "<pre>";
+        print_r($entity);
+        exit;
+        // need to convert $data to array for json output
+        return new JsonModel(array('data' => $entity));
 	}
 
 	public function create($data)
 	{
-		$entity = $service->create(null, $data);
+		$entity = $this->service->create($data);
         $entity = $this->mapper->insert($entity);
+        echo "<pre>";
+        print_r($entity);
+        exit;
 
-        return new JsonModel('data' => $entity);
+        // todo convert to array for jsonmodel
+        return new JsonModel(array('data' => $entity));
 		// 
         /*$this->getResponse()->setHeader(
             'Location',
@@ -77,18 +95,20 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
 
 	public function update($id, $data)
 	{
-		$entity = $service->save($id, $data);
+        //$data['email'] = 'system@vortex.com';
+        //$data['password'] = 'system33';
+        $entity = $this->service->update($id, $data);
         $entity = $this->mapper->update($entity);
-
-        return new JsonModel('data' => $entity);
-		//$this->save();
-		//return array('data' => 'update');
+        echo "<pre>";
+        print_r($entity);
+        exit;
+        // todo convert to array for jsonmodel
+        return new JsonModel(array('data' => $entity));
 	}
 
 
 	public function delete($id)
 	{
-		$service->delete($id);
         try {
             $entity = $this->mapper->findById($id);
         } catch (\RestCrudDoctrineModule\Service\Exception\NotFound $e) {
@@ -109,17 +129,19 @@ abstract class AbstractRestfulController extends ZendAbstractRestfulController
             );
         }
         
+        echo 'deleted';
+        exit;
         $this->getResponse()->setHttpResponseCode(204);
 		//return array('data' => 'delete');
 	}
 
-	public function setService($service)
+	public function getService()
 	{
-		$this->service = $service;
+		return $this->service;
 	}
 
-    public function setMapper($mapper)
+    public function getMapper()
     {
-        $this->mapper = $mapper;
+        return $this->mapper;
     }
 }

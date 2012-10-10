@@ -3,16 +3,21 @@
 namespace RestCrudDoctrineModule\Service;
 
 use Zend\ServiceManager\ServiceManagerAwareInterface;
-use Zend ServiceManager\ServiceManager;
-
+use Zend\ServiceManager\ServiceManager;
+use RestCrudDoctrineModule\Mapper\AbstractDBMapper as DBMapper;
 use Doctrine\ORM\QueryBuilder;
 
 abstract class AbstractRestService implements ServiceManagerAwareInterface
 {
 	protected $sm;
 
+	protected $mapper;
+
 	protected $count;
 
+	public function __construct(DBMapper $mapper) {
+        $this->mapper = $mapper;
+    }
 	/*public function getAll($start = 0, $count = 100, $orderBy = array()) {
 		$qb = $this->getQueryBuilder($start, $count);
 		if(count($orderby)) {
@@ -39,10 +44,29 @@ abstract class AbstractRestService implements ServiceManagerAwareInterface
         return $entity;
 	}*/
 
+	public function create(array $data) 
+	{	
+		$entityClassName = $this->mapper->getEntityClassName();
+		$entity = new $entityClassName;
+		$entity = $this->bind($data, $entity);
+		return $entity;
+	}
 
-	public function save($id, $data) 
+	public function update($id, $data)
 	{
-		//todo map id/data to the model
+		$entity = $this->mapper->findById($id);
+		$entity = $this->bind($data, $entity);
+		return $entity;
+	}
+
+	public function bind($data, $entity) 
+	{
+		foreach($data as $element => $value)
+        {
+            $func = 'set' . ucfirst($element);
+            $entity->$func($value);
+        }
+        return $entity;
 	}
 
 	public function delete($id) 

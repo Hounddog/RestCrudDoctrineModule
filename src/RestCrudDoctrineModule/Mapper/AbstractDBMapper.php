@@ -4,30 +4,30 @@ namespace RestCrudDoctrineModule\Mapper;
 
 use Doctrine\ORM\EntityManager;
 
-abstract class AbstractMapper
+abstract class AbstractDBMapper
 {
     /**
      * @var \Doctrine\ORM\EntityManager
      */
     protected $em;
 
-    protected $entity;
+    protected $entityClassName;
 
-    public function __construct(EntityManager $em, $entity)
+    public function __construct(EntityManager $em, $entityClassName)
     {
         $this->em      = $em;
-        $this->entity  = $entity;
+        $this->entityClassName  = $entityClassName;
     }
 
     public function findAll() 
     {
-        $er = $this->em->getRepository($this->entity);
+        $er = $this->em->getRepository($this->entityClassName);
         return $er->findAll();
     }
 
     public function findById($id)
     {
-        $er = $this->em->getRepository($this->entity);
+        $er = $this->em->getRepository($this->entityClassName);
         return $er->find($id);
     }
 
@@ -53,5 +53,10 @@ abstract class AbstractMapper
         $this->em->flush();
 
         return $entity;
+    }
+
+    public function getEntityClassName() 
+    {
+        return $this->entityClassName;
     }
 }
